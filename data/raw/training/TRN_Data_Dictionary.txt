@@ -1,0 +1,35 @@
+TOTAL ROW COUNT - 144930
+
+Timestamp - temporal timestamp indicating when the measurement was taken, 
+                formatted as YYYY-MM-DD hh:mm:ss
+    Unit of Measure: ---
+
+X_ACR_Mot.PV - vibrational velocity measured by the motor accelerometer	
+    Unit of Measure: m/s 
+
+X_ACR_Mot.SV - peak value measured by the motor accelerometer	
+    Unit of Measure: m/s2
+
+X_ACR_Mot.TV - contact temperature of the motor accelerometer	
+    Unit of Measure: °C
+
+X_ACR_Pmp.PV - vibrational velocity measured by the pump accelerometer	
+    Unit of Measure: m/s
+
+X_ACR_Pmp.SV - peak value measured by the pump accelerometer	
+    Unit of Measure: m/s2
+
+X_ACR_Pmp.TV - contact temperature of the pump accelerometer	
+    Unit of Measure: °C
+
+X_Temp.SV - motor casing temperature	
+    Unit of Measure: °C
+
+X_Pres.SV - outlet fluid pressure from the pump	
+    Unit of Measure: bar
+
+Barometer - atmospheric pressure	
+    Unit of Measure: mbar
+    
+Temperature - ambient temperature	
+    Unit of Measure: °C    
