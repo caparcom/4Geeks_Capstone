@@ -1,3 +1,6 @@
+# This API file will pull years 2017 through 2023, 6 files in total with the following naming conventions:
+#   nces_public_schools_2019_20, nces_public_schools_2020_21, etc
+
 import time
 import requests
 import pandas as pd
@@ -17,6 +20,7 @@ def get_json(session, params, timeout=(10, 90), retries=6):
             print(f"[retry {attempt}/{retries}] {e} -> sleeping {sleep_s}s")
             time.sleep(sleep_s)
 
+# Change out_path for other years. Follows same naming convention, ie 2020_21, 2021_22, etc.
 def download_layer_csv(out_path="nces_public_schools_2019_20.csv", chunk_size=300):
     with requests.Session() as session:
       

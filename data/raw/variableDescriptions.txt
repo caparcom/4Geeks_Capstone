@@ -4,7 +4,7 @@ LATCOD: Lat Coord
 LONGCOD: Loong Coord
 ObjectID: Internal GIS Identifer
 
-Identificaiton
+Identification
 NCESSCH - Official NCES School ID
 SURVYEAR - Year of Survey
 STABR - State Abbreviation
