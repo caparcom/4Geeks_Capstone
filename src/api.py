@@ -1,16 +1,17 @@
-# This API file will pull years 2017 through 2023, 6 files in total with the following naming conventions:
-#   nces_public_schools_2019_20, nces_public_schools_2020_21, etc
+# This API file will pull multiple school years (e.g., 2017-2018 through 2022-2023)
+# and save separate CSVs.
 
 import time
 import requests
 import pandas as pd
 
-URL = "https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_GEOCODE_PUBLICSCH_1920/MapServer/0/query"
+BASE_URL = "https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_GEOCODE_PUBLICSCH_{}/MapServer/0/query"
 
-def get_json(session, params, timeout=(10, 90), retries=6):
+
+def get_json(session, url, params, timeout=(10, 90), retries=6):
     for attempt in range(1, retries + 1):
         try:
-            r = session.get(URL, params=params, timeout=timeout)
+            r = session.get(url, params=params, timeout=timeout)
             r.raise_for_status()
             return r.json()
         except (requests.RequestException, ValueError) as e:
@@ -20,11 +21,16 @@ def get_json(session, params, timeout=(10, 90), retries=6):
             print(f"[retry {attempt}/{retries}] {e} -> sleeping {sleep_s}s")
             time.sleep(sleep_s)
 
-# Change out_path for other years. Follows same naming convention, ie 2020_21, 2021_22, etc.
-def download_layer_csv(out_path="nces_public_schools_2019_20.csv", chunk_size=300):
+
+def download_layer_csv(year_code, out_path=None, chunk_size=300):
+    url = BASE_URL.format(year_code)
+
+    # Default output name if not provided
+    if out_path is None:
+        out_path = f"nces_public_schools_{year_code}.csv"
+
     with requests.Session() as session:
-      
-        ids_payload = get_json(session, {
+        ids_payload = get_json(session, url, {
             "where": "1=1",
             "returnIdsOnly": "true",
             "f": "json",
@@ -32,13 +38,13 @@ def download_layer_csv(out_path="nces_public_schools_2019_20.csv", chunk_size=30
         object_ids = ids_payload.get("objectIds", [])
         object_ids.sort()
 
-        print(f"Found {len(object_ids)} records. Downloading in chunks of {chunk_size}...")
+        print(f"Found {len(object_ids)} records for {year_code}. Downloading in chunks of {chunk_size}...")
 
         rows = []
         for i in range(0, len(object_ids), chunk_size):
             chunk = object_ids[i:i + chunk_size]
 
-            payload = get_json(session, {
+            payload = get_json(session, url, {
                 "objectIds": ",".join(map(str, chunk)),
                 "outFields": "*",
                 "returnGeometry": "false",
@@ -48,14 +54,20 @@ def download_layer_csv(out_path="nces_public_schools_2019_20.csv", chunk_size=30
             feats = payload.get("features", [])
             rows.extend([f["attributes"] for f in feats])
 
-            if (i // chunk_size) % 10 == 0:  
+            if (i // chunk_size) % 10 == 0:
                 print(f"Fetched {min(i + chunk_size, len(object_ids))}/{len(object_ids)}")
 
-            time.sleep(0.15) 
+            time.sleep(0.15)
 
         df = pd.DataFrame(rows)
         df.to_csv(out_path, index=False)
         print(f"Saved {len(df)} rows -> {out_path}")
 
+
 if __name__ == "__main__":
-    download_layer_csv()
+    # School-year codes used by NCES services
+    year_codes = ["1718", "1819", "1920", "2021", "2122", "2223"]
+
+    for yc in year_codes:
+        print(f"\n=== Downloading year {yc} ===")
+        download_layer_csv(yc)
