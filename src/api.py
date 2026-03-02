@@ -25,7 +25,6 @@ def get_json(session, url, params, timeout=(10, 90), retries=6):
 def download_layer_csv(year_code, out_path=None, chunk_size=300):
     url = BASE_URL.format(year_code)
 
-    # Default output name if not provided
     if out_path is None:
         out_path = f"nces_public_schools_{year_code}.csv"
 
@@ -63,11 +62,21 @@ def download_layer_csv(year_code, out_path=None, chunk_size=300):
         df.to_csv(out_path, index=False)
         print(f"Saved {len(df)} rows -> {out_path}")
 
+def download_dp03():
+    url = "https://api.census.gov/data/2022/acs/acs5/profile/groups/DP03.json"
+    r = requests.get(url)
+    r.raise_for_status()
+
+    with open("DP03_2022.json", "w", encoding="utf-8") as f:
+        f.write(r.text)
+
+    print("Saved json file ")
 
 if __name__ == "__main__":
-    # School-year codes used by NCES services
     year_codes = ["1718", "1819", "1920", "2021", "2122", "2223"]
 
     for yc in year_codes:
-        print(f"\n=== Downloading year {yc} ===")
+        print(f"{yc}")
         download_layer_csv(yc)
+
+    download_dp03()
