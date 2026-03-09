@@ -3,6 +3,8 @@ import pandas as pd
 import joblib
 import numpy as np
 import matplotlib.pyplot as plt
+import requests
+import tempfile
 
 # ---------------------------------------------------------
 # PAGE CONFIG (MUST BE FIRST STREAMLIT COMMAND)
@@ -41,9 +43,12 @@ st.title("School Strain Monitoring Platform")
 # ---------------------------------------------------------
 # LOAD DATA + MODEL
 # ---------------------------------------------------------
+DATA_URL = "https://huggingface.co/datasets/whitfieldscott/school_strain_data/resolve/main/xgb_production_dataset.csv"
+MODEL_URL = "https://huggingface.co/datasets/whitfieldscott/school_strain_data/resolve/main/xgb_model.pkl"
+
 @st.cache_data
 def load_data():
-    return pd.read_csv("xgb_production_dataset.csv")
+    return pd.read_csv(DATA_URL)
 
 df = load_data()
 
@@ -51,21 +56,31 @@ df = load_data()
 def load_model_and_features(dataframe: pd.DataFrame):
     """
     Load XGBoost model and derive:
-      - feature_list from dataframe (drop ID/target columns)
-      - feature_importance_df from model.get_booster().get_score('gain')
-        aligned to feature_list so it always matches the dataset columns.
+    
+    - feature_list from dataframe (drop ID/target columns)
+    - feature_importance_df from model.get_booster().get_score('gain')
+      aligned to feature_list so it always matches the dataset columns.
     """
-    model = joblib.load("xgb_model.pkl")
+
+    # Download model from HuggingFace
+    response = requests.get(MODEL_URL)
+
+    # Write to a temporary file
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write(response.content)
+        tmp_path = tmp.name
+
+    model = joblib.load(tmp_path)
 
     # Build feature list from the dataset (most reliable)
     exclude_cols = {"NCESSCH", "SCH_NAME", "SURVYEAR", "high_strain"}
     feature_list = [c for c in dataframe.columns if c not in exclude_cols]
 
-    # Compute feature importance from model (avoid loading xgb_feature_importance.pkl)
+    # Compute feature importance from model
     booster = model.get_booster()
     gain_scores = booster.get_score(importance_type="gain")  # dict: feature -> gain
 
-    # Align importance to dataset features (missing features get 0)
+    # Align importance to dataset features
     feature_importance_df = (
         pd.DataFrame({"feature": feature_list})
         .assign(total_gain=lambda d: d["feature"].map(gain_scores).fillna(0.0))
