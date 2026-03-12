@@ -653,6 +653,49 @@ with tab2:
             The most recent model estimate is **{last_prob:.2%}**, indicating **{interpretation}**.
             """)
 
+            # -----------------------------------------------------
+            # AI POLICY ASSISTANT (MULTI-YEAR ANALYSIS)
+            # -----------------------------------------------------
+
+            st.subheader("AI Policy Assistant (Multi-Year Analysis)")
+
+            multi_year_question = st.text_input(
+                "Ask a question about this school's long-term strain trends:"
+            )
+
+            if st.button("Ask AI About Trends") and multi_year_question:
+
+                trend_prompt = f"""
+                You are an education policy analyst.
+
+                School: {school_all_years.SCH_NAME.iloc[0]}
+
+                Observed years: {years_arr}
+
+                Latest strain probability: {latest_prob:.2%}
+                Average strain probability: {avg_prob:.2%}
+
+                Peak risk year: {peak_year} ({peak_value:.2%})
+
+                Overall trend:
+                {trend_direction}
+
+                User question:
+                {multi_year_question}
+
+                Provide a concise explanation and possible administrative or policy actions.
+                """
+
+                response = client.chat.completions.create(
+                    model="gpt-4.1-mini",
+                    messages=[{"role": "user", "content": trend_prompt}]
+                )
+
+                trend_answer = response.choices[0].message.content
+
+                st.markdown("### AI Trend Analysis")
+                st.write(trend_answer)
+
     # =====================================================
     # EXPANDER — HOW TO INTERPRET
     # =====================================================
