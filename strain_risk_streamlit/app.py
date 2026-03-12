@@ -453,6 +453,45 @@ with tab2:
 
         st.info(ai_summary)
 
+        # -----------------------------------------------------
+        # ASK AI ABOUT THIS SCHOOL
+        # -----------------------------------------------------
+
+        st.subheader("AI Policy Assistant")
+
+        user_question = st.text_input(
+            "Ask a question about this school's strain risk:"
+        )
+
+        if st.button("Ask AI") and user_question:
+
+            prompt = f"""
+            You are an education policy analyst.
+
+            School: {school_one_year["SCH_NAME"].values[0]}
+            Year: {selected_year}
+
+            Predicted strain probability: {predicted_prob:.2%}
+
+            Key contributing factors:
+            {top_feature_list}
+
+            User question:
+            {user_question}
+
+            Provide a concise explanation and possible policy or administrative actions.
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            answer = response.choices[0].message.content
+
+            st.markdown("### AI Response")
+            st.write(answer)
+
         actual_label = int(school_one_year["high_strain"].values[0])
 
         st.subheader("Risk Assessment")
