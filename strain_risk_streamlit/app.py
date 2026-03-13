@@ -261,103 +261,6 @@ with tab1:
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     # =====================================================
-    # KEY SYSTEM-WIDE FINDINGS
-    # =====================================================
-    st.subheader("Key Findings")
-
-    X_all = df[feature_list]
-    all_probs = model.predict_proba(X_all)[:, 1]
-
-    col1, col2 = st.columns(2)
-
-# ---------------- ROC-AUC PERFORMANCE ----------------
-with col1:
-    st.markdown("**Model Performance (ROC-AUC Curve)**")
-
-     # actual values
-    y_true = df["high_strain"]
-
-    # predicted probabilities
-    y_scores = model.predict_proba(df[feature_list])[:, 1]
-
-    fpr, tpr, _ = roc_curve(y_true, y_scores)
-    roc_auc = auc(fpr, tpr)
-
-    fig, ax = plt.subplots(figsize=(5,3), dpi=100)
-
-    ax.plot(fpr, tpr, label=f"AUC = {roc_auc:.3f}")
-    ax.plot([0,1],[0,1], linestyle="--")
-
-    ax.set_xlabel("False Positive Rate", fontsize=9)
-    ax.set_ylabel("True Positive Rate", fontsize=9)
-    ax.tick_params(labelsize=9)
-
-    ax.legend(loc="lower right")
-
-    plt.tight_layout()
-    st.pyplot(fig)
-
-    st.markdown(f"""
-    The ROC curve evaluates how well the model distinguishes between schools
-    experiencing structural strain and those that are not.
-
-    The model achieved an **AUC score of {roc_auc:.3f}**, indicating strong
-    predictive capability. An AUC close to 1.0 means the model can reliably
-    separate higher-risk schools from lower-risk schools across a range of
-    classification thresholds.
-    """)
-
-
-# ---------------- PRECISION vs RECALL ----------------
-with col2:
-    st.markdown("**XGBoost: Precision vs Recall**")
-
-    from sklearn.metrics import precision_score, recall_score
-
-    # predictions
-    y_pred = (model.predict_proba(df[feature_list])[:,1] > 0.5).astype(int)
-
-    precision = precision_score(df["high_strain"], y_pred)
-    recall = recall_score(df["high_strain"], y_pred)
-
-    fig2, ax2 = plt.subplots(figsize=(5,3), dpi=100)
-
-    metrics = ["Precision", "Recall"]
-    values = [precision, recall]
-
-    bars = ax2.bar(metrics, values)
-
-    ax2.set_ylim(0,1)
-    ax2.set_ylabel("Score", fontsize=9)
-    ax2.tick_params(labelsize=9)
-
-    # add percentages above bars
-    for bar, val in zip(bars, values):
-        ax2.text(
-            bar.get_x() + bar.get_width()/2,
-            val + 0.02,
-            f"{val*100:.1f}%",
-            ha="center",
-            fontsize=9
-        )
-
-    plt.tight_layout()
-    st.pyplot(fig2)
-
-    st.markdown("""
-    Precision measures how often the model is correct when it predicts a school
-    is experiencing structural strain. Recall measures how effectively the model
-    identifies schools that truly face elevated strain risk.
-
-    The model prioritizes **recall**, meaning it is more focused on identifying
-    potentially strained schools rather than missing them, which is appropriate
-    for early-warning monitoring systems used by education administrators.
-    """)
-
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # =====================================================
     # INTERPRETATION & CONCLUSION
     # =====================================================
     st.subheader("Interpretation & Conclusion")
@@ -376,6 +279,65 @@ emerge as strong indicators
 Predictive modeling enables earlier identification, smarter prioritization,  
 and more proactive resource planning.
 """)
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
+    # =====================================================
+    # KEY SYSTEM-WIDE FINDINGS
+    # =====================================================
+    st.subheader("Key Findings")
+
+    X_all = df[feature_list]
+    all_probs = model.predict_proba(X_all)[:, 1]
+
+    col1, col2, col3 = st.columns([1, 1, 1.7])
+
+# ---------------- ROC-AUC PERFORMANCE ----------------
+
+with col1:
+    st.markdown("**Model Performance (ROC-AUC Curve)**")
+
+    st.image("ROC AUC.png", use_container_width=True)
+
+    st.markdown("""
+    The ROC curve evaluates how well the model distinguishes between schools
+    experiencing structural strain and those that are not.
+
+    The model achieved strong predictive capability during evaluation of the
+    trained model.
+    """)
+
+
+# ---------------- PRECISION vs RECALL ----------------
+with col2:
+    st.markdown("**Precision vs Recall**")
+
+    st.image("Precision Recall.png", use_container_width=True)
+
+    st.markdown("""
+    Precision measures how often the model is correct when it predicts a school
+    is experiencing structural strain. Recall measures how effectively the model
+    identifies schools that truly face elevated strain risk.
+
+    The model prioritizes recall, meaning it focuses on identifying potentially
+    strained schools rather than missing them.
+    """)
+    
+# ---------------- FEATURE IMPORTANCE ----------------
+with col3:
+    st.markdown("**Top 10 Model Feature Contributions**")
+
+    st.image("top 10 feature importance.png", use_container_width=True)
+
+    st.markdown("""
+Feature importance shows which variables contributed most to the model's
+ability to identify schools experiencing structural strain.
+
+These features represent the strongest signals used by the model when
+estimating strain risk across schools.
+""")
+
+
 
 # =========================================================
 # TAB 2 — SCHOOL DEEP DIVE
@@ -787,13 +749,13 @@ SURVYEAR — Year of data
 high_strain — 1 = school classified as strained
 
 Income Distribution  
-TH_10_15K — households earning $10–15k  
-TH_15_25K — households earning $15–25k  
-TH_50_75K — households earning $50–75k  
-TH_75_100K — households earning $75–100k  
-TH_100_150K — households earning $100–150k  
-TH_150_200K — households earning $150–200k  
-TH_200K_AND_ABOVE — households above $200k
+`TH_10_15K` — households earning $10–15k  
+`TH_15_25K` — households earning $15–25k  
+`TH_50_75K` — households earning $50–75k  
+`TH_75_100K` — households earning $75–100k  
+`TH_100_150K` — households earning $100–150k  
+`TH_150_200K` — households earning $150–200k  
+`TH_200K_AND_ABOVE` — households above $200k
 
 Demographics  
 prop_BL — % Black students  
