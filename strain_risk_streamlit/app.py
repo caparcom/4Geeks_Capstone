@@ -357,16 +357,16 @@ with col2:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-# =====================================================
-# INTERPRETATION & CONCLUSION
-# =====================================================
-st.subheader("Interpretation & Conclusion")
+    # =====================================================
+    # INTERPRETATION & CONCLUSION
+    # =====================================================
+    st.subheader("Interpretation & Conclusion")
 
-st.markdown("""
+    st.markdown("""
 • Structural strain is not random — it follows identifiable patterns  
 
 • Grade composition and socioeconomic concentration consistently  
-  emerge as strong indicators  
+emerge as strong indicators  
 
 • Model agreement increases confidence in prioritization decisions  
 
